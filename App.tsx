@@ -1,20 +1,39 @@
+import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-export default function App() {
+import { TareasProvider } from './src/context/TareasContext';
+import RootNavigator from './src/navigation/RootNavigator';
+import { useTema } from './src/hooks/useTema';
+
+/**
+ * La StatusBar (barra superior del telefono) cambia de color
+ * segun el modo del tema. Debe estar DENTRO del TareasProvider
+ * para poder acceder al tema.
+ */
+function BarraEstadoTematica() {
+  const { esOscuro } = useTema();
+  return <StatusBar style={esOscuro ? 'light' : 'dark'} />;
+}
+
+function ContenidoApp() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <>
+      <RootNavigator />
+      <BarraEstadoTematica />
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <TareasProvider>
+          <ContenidoApp />
+        </TareasProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
