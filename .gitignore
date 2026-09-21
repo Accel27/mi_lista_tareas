@@ -9,7 +9,7 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native (macOS/iOS)
 .kotlin/
 *.orig.*
 *.jks
@@ -36,6 +36,22 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
+# iOS no lo generamos
 /ios
-/android
+
+# Android: SI versionamos el codigo fuente, pero NO los builds
+android/.gradle/
+android/build/
+android/app/build/
+android/.cxx/
+android/app/.cxx/
+android/local.properties
+android/.idea/
+*.iml
+
+# Keystore: NUNCA subir el de produccion
+*.keystore
+!debug.keystore
+
+# Caches de CMake/ninja
+**/.cxx/

@@ -1,6 +1,10 @@
 // ============================================================
 // COMPONENTE ModalTarea
 // Modal para crear o editar una tarea. Se adapta al tema.
+// En modo creacion no se permite elegir "cancelada" (no tiene
+// sentido cancelar algo que aun no existe).
+// Usa safe area para que los botones no queden tapados por la
+// barra de navegacion de Android en dispositivos con 3 botones.
 // ============================================================
 
 import { useState, useEffect, useMemo } from 'react';
@@ -17,6 +21,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EstadoTarea, Prioridad, Tarea } from '../types';
 import {
@@ -46,7 +51,16 @@ interface Props {
 }
 
 const PRIORIDADES: Prioridad[] = ['baja', 'media', 'alta'];
-const ESTADOS: EstadoTarea[] = [
+
+// Estados disponibles al CREAR (sin "cancelada")
+const ESTADOS_NUEVA: EstadoTarea[] = [
+  'pendiente',
+  'en-progreso',
+  'completada',
+];
+
+// Estados disponibles al EDITAR (todos)
+const ESTADOS_EDICION: EstadoTarea[] = [
   'pendiente',
   'en-progreso',
   'completada',
@@ -63,6 +77,7 @@ export default function ModalTarea({
 }: Props) {
   const { configuracion } = useTareas();
   const { colores } = useTema();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => crearEstilos(colores), [colores]);
 
   const [titulo, setTitulo] = useState('');
@@ -72,6 +87,9 @@ export default function ModalTarea({
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const [fechaVencimiento, setFechaVencimiento] = useState<string | null>(null);
   const [errorTitulo, setErrorTitulo] = useState(false);
+
+  // Estados segun modo (crear vs editar)
+  const estadosDisponibles = tareaEditar ? ESTADOS_EDICION : ESTADOS_NUEVA;
 
   useEffect(() => {
     if (!visible) return;
@@ -191,7 +209,12 @@ export default function ModalTarea({
         style={styles.fondo}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.contenedor}>
+        <View
+          style={[
+            styles.contenedor,
+            { paddingBottom: insets.bottom > 0 ? insets.bottom : 0 },
+          ]}
+        >
           <View style={styles.header}>
             <Text style={styles.tituloHeader}>
               {tareaEditar ? TEXTOS.modalTareaEditar : TEXTOS.modalTareaCrear}
@@ -263,7 +286,7 @@ export default function ModalTarea({
 
             <Text style={styles.label}>{TEXTOS.labelEstado}</Text>
             <View style={styles.chips}>
-              {ESTADOS.map((e) => {
+              {estadosDisponibles.map((e) => {
                 const activo = estado === e;
                 return (
                   <Pressable
